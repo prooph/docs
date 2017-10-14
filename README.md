@@ -1,6 +1,6 @@
 # prooph docs 
 
-Source for docs.getprooph.org
+Source for [docs.getprooph.org](http://docs.getprooph.org)
 
 Welcome at prooph! We are developing and supporting CQRS and EventSourcing infrastructure for PHP 7.1+ environments.
 prooph is NOT a framework. Instead we provide components which address individual topics.
