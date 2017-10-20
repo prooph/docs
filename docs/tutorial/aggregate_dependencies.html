@@ -701,19 +701,19 @@
         </div>
                 <div class="col-md-9">
 <div id="section-main"><h1 id="1-5">Aggregate Dependencies</h1>
-<p>In the previous chapters we've learned that an aggregate protects invariants and records an event for each state transition.
+<p>In the previous chapters we learned that an aggregate protects invariants and records an event for each state transition.
 It then applies recorded events to its internal state and uses the state to validate if the next state transition can take place.</p>
-<p>But not in all cases an aggregate can rely on its internal state only. Sometimes the aggregate needs to get information
+<p>But an aggregate cannot always rely solely on its internal state. Sometimes the aggregate needs to get information
 from somewhere else to make a decision. In this case the aggregate has a dependency to an external service and in this
-chapter we will learn how to give access to such a service and of course how to test it.</p>
+chapter we will learn how to give access to such a service and, of course, how to test it.</p>
 <h2 id="1-5-1">Method Injection</h2>
-<p>You may have noticed that we've left a <code>@TODO Check stock</code> in the <code>Basket::addProduct()</code> method. Products are handled
-in an external ERP system and we can request current stock of a product from that system. When implementing Domain-Driven Design
+<p>You may have noticed that we left a <code>@TODO Check stock</code> in the <code>Basket::addProduct()</code> method. Products are handled
+in an external ERP system and we can request current stock of a product from that system. When implementing Domain-Driven Design,
 it is a common approach to integrate an external system by defining an interface for it in the domain model but move
-the implementation to the <code>infrastucture</code> layer. A good example of such an integration is shown in the PHP DDD Cargo Sample¹
+the implementation to the <code>infrastucture</code> layer. A good example of such an integration is shown in the PHP DDD Cargo Sample¹,
 where the Cargo domain makes use of an external GraphTraversalService. This is called Hexagonal Architecture or Ports &amp; Adapters².</p>
-<p>We want to use the same approach for the ERP system but limit the implementation to the interface only as we don't have
-access to the ERP system right now. We only know the interface specification. But that's enough because we can easily
+<p>We want to use the same approach for the ERP system but limit the implementation to the interface only, as we don't have
+access to the ERP system right now and only know the interface specification. That's enough, though, because we can easily
 mock the ERP and use the interface to decouple our domain model from it.</p>
 <p><em>File: ./Basket/src/Model/ERP/ERP.php</em></p>
 <pre><code class="language-php">&lt;?php
@@ -727,7 +727,7 @@ use App\Basket\Model\Exception\UnknownProduct;
 interface ERP
 {
     /**
-     * Get stock information of given product
+     * Get stock information for given product
      *
      * If stock information cannot be fetched from the ERP system
      * this method returns null.
@@ -743,12 +743,12 @@ interface ERP
 
 
 </code></pre>
-<p>As you can see the <code>ERP</code> interface defines a method <code>getProductStock</code> which takes a <code>ProductId</code> as argument and returns a
+<p>The <code>ERP</code> interface defines a method <code>getProductStock</code> which takes a <code>ProductId</code> as an argument and returns a
 <code>ProductStock</code> value object or null in case the request failed. You may have noticed that we use value objects a lot. In fact everything except our <code>Basket</code>
 aggregate is modeled as a value object so far. It is a rule of thumb to model everything as value objects and only
-use an aggregate if the object really has a lifecycle in YOUR domain. Products of course have a lifecycle but in
+use an aggregate if the object really has a lifecycle in YOUR domain. Products have a lifecycle but in
 the ERP system and not in our basket domain. We only consume product data as read-only information. Hence, we are better
-of with using value objects to represent different aspects of a product like its stock information.</p>
+off using value objects to represent different aspects of a product like its stock information.</p>
 <p>Having said this, let's add the value object.</p>
 <p><em>File: ./Basket/src/Model/ERP/ProductStock.php</em></p>
 <pre><code class="language-php">&lt;?php
@@ -839,13 +839,13 @@ final class ProductStock
 }
 
 </code></pre>
-<p><code>ProductStock</code> gives us two important information:</p>
+<p><code>ProductStock</code> gives us two important pieces of information:</p>
 <ul>
 <li>stock quantity</li>
 <li>a version</li>
 </ul>
-<p>Stock quantity is self-explaining and the version is related to that quantity. Whenever stock quantity of a product
-changes the version is increased by one. We can use the version during checkout to verify if the last known quantity of
+<p>Stock quantity is self-explanatory, and the version is related to that quantity. Whenever stock quantity of a product
+changes, the version is increased by one. We can use the version during checkout to verify if the last known quantity of
 the product is still valid or if the quantity known by the basket is out-of-date.</p>
 <p>We also need a new <code>UnknownProduct</code> exception which is thrown by the <code>ERP</code> adapter in case the ERP system returns a not found response.</p>
 <p><em>File: ./Basket/src/Model/Exception/UnknownProduct.php</em></p>
@@ -869,13 +869,13 @@ final class UnknownProduct extends \InvalidArgumentException
 }
 
 </code></pre>
-<p>Now the <code>Basket</code> aggregate should use the <code>ERP</code> system to request stock information before adding a product to the basket.
+<p>The <code>Basket</code> aggregate should use the <code>ERP</code> system to request stock information before adding a product to the basket.
 The aggregate should reject the product if it is out of stock.</p>
-<p><em>Note: We keep the example simple. In a real world system this stock check would include many more variants for example permanent or
+<p><em>Note: We keep the example simple. In a real world system this stock check would include many more variants, for example permanent or
 temporarily out of stock products, checkout even if a product is out of stock, and so on.</em></p>
 <p>But how do we get the <code>ERP</code> adapter into the aggregate? The answer is <strong>Method Injection</strong>. The <code>Basket::addProduct</code> defines
-the <code>ÈRP</code> system as a dependency for that method. The caller of the method is responsible for providing an implementation.
-We see that in action when we look at command handlers. For now we align the method and update our test case.</p>
+the <code>ERP</code> system as a dependency for that method, and the caller of the method is responsible for providing an implementation.
+We will see that in action when we look at command handlers. For now, we align the method and update our test case.</p>
 <p><em>File: ./Basket/src/Model/Basket.php</em></p>
 <pre><code class="language-php">&lt;?php
 
@@ -890,7 +890,7 @@ use App\Basket\Model\Exception\ProductOutOfStock;
 final class Basket extends AggregateRoot
 {
     //...
-    
+
     public function addProduct(ProductId $productId, ERP $ERP): void
     {
         if(array_key_exists($productId-&gt;toString(), $this-&gt;products)) {
@@ -951,7 +951,7 @@ final class Basket extends AggregateRoot
 }
 
 </code></pre>
-<p><code>Basket::addProduct()</code> has quite some logic now and uses an external <code>ERP</code> system to request stock information of the product.
+<p><code>Basket::addProduct()</code> has quite a bit of logic now and uses an external <code>ERP</code> system to request stock information of the product.
 In case the ERP system is temporarily unavailable the <code>Basket</code> aggregate accepts the product without a stock quantity
 check. Later in the checkout process we need to take care of this situation and check stock again. If we have
 a quantity stock conflict during checkout the order is routed to a support team who needs to contact the customer and
@@ -979,7 +979,7 @@ final class ProductOutOfStock extends \RuntimeException
 
 </code></pre>
 <p>If everything is ok the <code>Basket</code> aggregate accepts the product and records the <code>ProductAddedToBasket</code> event but now
-with additional information so we need to add new getter methods to the event.</p>
+with additional information, so we need to add new getter methods to the event.</p>
 <p><em>File: ./Baset/src/Model/Event/ProductAddedToBasket.php</em></p>
 <pre><code class="language-php">&lt;?php
 
@@ -1020,10 +1020,10 @@ final class ProductAddedToBasket extends AggregateChanged
 }
 
 </code></pre>
-<p>In the <code>apply</code> method of the <code>Basket</code> aggregate these additional information is added to the internal state
+<p>In the <code>apply</code> method of the <code>Basket</code> aggregate this additional information is added to the internal state
 so that we have access to it later.</p>
 <p>Testing the expanded version of <code>Basket::addProduct()</code> is still relatively simple but we end up with a lot more test methods
-to cover the different results of the method call. Check the additions below and see how we can use PHPUnit's <code>prophecy</code>
+to cover the different results of the method call. Check the additions below to see how we can use PHPUnit's <code>prophecy</code>
 integration to mock the ERP system and simulate different situations.</p>
 <p><em>File: ./Basket/tests/Model/BasketTest.php</em></p>
 <pre><code class="language-php">&lt;?php
@@ -1145,7 +1145,7 @@ class BasketTest extends TestCase
         $ERP = $this-&gt;prophesize(ERP::class);
 
         //This ERP mock knows no product
-        $ERP-&gt;getProductStock(Argument::any())-&gt;willThrow(UnknownProduct::withProductId($this-&gt;product1));
+        $ERP-&gt;getProductStock($this-&gt;product1)-&gt;willThrow(UnknownProduct::withProductId($this-&gt;product1));
 
         $basket-&gt;addProduct($this-&gt;product1, $ERP-&gt;reveal());
     }
@@ -1162,7 +1162,7 @@ class BasketTest extends TestCase
         $ERP = $this-&gt;prophesize(ERP::class);
 
         //This ERP is unavailable
-        $ERP-&gt;getProductStock(Argument::any())-&gt;willReturn(null);
+        $ERP-&gt;getProductStock($this-&gt;product1)-&gt;willReturn(null);
 
         $basket-&gt;addProduct($this-&gt;product1, $ERP-&gt;reveal());
 
@@ -1252,7 +1252,7 @@ class BasketTest extends TestCase
         //Create a Mock of the ERP interface
         $ERP = $this-&gt;prophesize(ERP::class);
 
-        $ERP-&gt;getProductStock(Argument::exact($this-&gt;product1))-&gt;willReturn(ProductStock::fromArray(
+        $ERP-&gt;getProductStock($this-&gt;product1)-&gt;willReturn(ProductStock::fromArray(
             [
                 'product_id' =&gt; $this-&gt;product1-&gt;toString(),
                 'quantity' =&gt; $stockQuantity,
@@ -1276,10 +1276,10 @@ OK (6 tests, 21 assertions)
 
 </code></pre>
 <h2 id="1-5-2">Be Careful</h2>
-<p>You need to be careful when Using a dependency insight of an aggregate method. In the example shown above we only
-read data from an external system and we can handle the cases when communication goes wrong be it that the product
+<p>You need to be careful when using dependency injection in an aggregate method. In the example shown above, we only
+read data from an external system, and we can handle the cases when communication goes wrong, be it that the product
 could not be found or the external system is unavailable.</p>
-<p>Things get even more complex when you want to write data to an external system. Let's say we want to update stock quantity
+<p>Things get more complex when you want to write data to an external system. Let's say we want to update stock quantity
 for a product instead of requesting it. Such write operations should not be performed by the aggregate itself but instead
 by a process manager or a saga. In the next two chapters we're going to learn more about process managers and sagas
 and the difference between the two.</p>

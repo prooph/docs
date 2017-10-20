@@ -702,17 +702,16 @@
                 <div class="col-md-9">
 <div id="section-main"><h1 id="1-4">Testing Aggregates</h1>
 <p><strong>Event Sourcing makes it easy to test aggregates</strong>. In this chapter we will learn why. Don't underestimate this advantage.
-Easy testability is crucial for long-lived applications that evolve over time.
-Event Sourced aggregates sit at the heart of software. They are the engine to drive business forward.</p>
+Easy testability is crucial for long-lived applications that evolve over time.</p>
 <h2 id="1-4-1">Test Recorded Events</h2>
-<p>When testing an event sourced aggregate we only need to test for two things:</p>
+<p>When testing an event sourced aggregate we only need to test two things:</p>
 <ol>
 <li>Does the aggregate record the correct domain event(s)?</li>
 <li>Does the aggregate either reject an action or record a failed event if a business rule is not met?</li>
 </ol>
-<p>The fact that an aggregate is event sourced is hidden from the public API. If we want to test recorded events
-we need a test helper to get them from the aggregate. <code>prooph/event-sourcing</code> uses a so called <code>AggregateTranslator</code>
-to perform operations on protected methods of an aggregate. We can use the <code>ÀggregateTranslator</code> for our tests, too.
+<p>The fact that an aggregate is event sourced is hidden from the public API. If we want to test recorded events,
+we need a test helper to get them from the aggregate. <code>prooph/event-sourcing</code> uses a so-called <code>AggregateTranslator</code>
+to perform operations on protected methods of an aggregate. We can use the <code>AggregateTranslator</code> for our tests, too.
 Add a project <code>TestCase</code> class that includes some helper methods which we can use in our test cases.</p>
 <p><em>File: ./Basket/tests/TestCase.php</em></p>
 <pre><code class="language-php">&lt;?php
@@ -732,7 +731,7 @@ class TestCase extends PHPUnitTestCase
      * @var AggregateTranslator
      */
     private $aggregateTranslator;
-    
+
     protected function popRecordedEvents(AggregateRoot $aggregateRoot): array
     {
         return $this-&gt;getAggregateTranslator()-&gt;extractPendingStreamEvents($aggregateRoot);
@@ -747,7 +746,7 @@ class TestCase extends PHPUnitTestCase
             new \ArrayIterator($events)
         );
     }
-    
+
     private function getAggregateTranslator(): AggregateTranslator
     {
         if (null === $this-&gt;aggregateTranslator) {
@@ -758,11 +757,11 @@ class TestCase extends PHPUnitTestCase
 }
 
 </code></pre>
-<p>The same <code>TestCase</code> is used in the example application <code>proophessor-do</code>¹. Besides the <code>popRecordedEvents</code> method
+<p>The same <code>TestCase</code> is used in the example application, <code>proophessor-do</code>¹. Besides the <code>popRecordedEvents</code> method
 we've also added a <code>reconstituteAggregateFromHistory</code> method. With the latter we can prepare an aggregate for a test
-case by just using events. So we can "move" the aggregate to a certain point in the business process and start testing
-from there. This is really powerful and as a benefit also self documenting. We'll see that in a minute.</p>
-<p>In the "Event Sourcing Basics" chapter we've implemented the <code>Basket::startShoppingSession()</code> method. Let's
+case just using events, so we can "move" the aggregate to a certain point in the business process and start testing
+from there. This is really powerful and, as an added benefit, also self documenting. We'll see that in a minute.</p>
+<p>In the "Event Sourcing Basics" chapter we implemented the <code>Basket::startShoppingSession()</code> method. Let's
 test it now with a <code>BasketTest</code>.</p>
 <p><em>File: ./Basket/tests/Model/BasketTest.php</em></p>
 <pre><code class="language-php">&lt;?php
@@ -820,9 +819,9 @@ class BasketTest extends TestCase
 
 </code></pre>
 <p>The two value objects needed to start a shopping session are created in the <code>setUp()</code> method of the test case. This way
-we get fresh objects for each test without the need to create them manually in each test method.</p>
-<p>To run the test we need to tell <code>PHPUnit</code> where to find our test cases and how to use <code>composer autoloader</code> to locate
-the domain model. Just put a <code>phpunit.xml.dist</code> file in the project root with following content:</p>
+we get fresh objects for each test without needing to create them manually in each test method.</p>
+<p>To run the test, we need to tell <code>PHPUnit</code> where to find our test cases and how to use <code>composer autoloader</code> to locate
+the domain model. Just put a <code>phpunit.xml.dist</code> file in the project root with the following content:</p>
 <p><em>File: ./phpunit.xml.dist</em></p>
 <pre><code class="language-xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;phpunit bootstrap="vendor/autoload.php"&gt;
@@ -848,10 +847,10 @@ OK (1 test, 4 assertions)
 of green tests and need to refactor something in the domain model. So do yourself and your colleagues a favor
 and test the domain model!</p>
 <h2 id="1-4-2">Reconstitute From History</h2>
-<p>For the first test we did not need the <code>reconstituteAggregateFromHistory()</code> test helper but if we add more behaviour to the
-<code>Basket</code> aggregate the test helper becomes quite handy. To see the test helper in action we're going to add a second
+<p>For the first test, we did not need the <code>reconstituteAggregateFromHistory()</code> test helper, but if we add more behaviour to the
+<code>Basket</code> aggregate, the test helper becomes quite handy. To see the test helper in action we're going to add a second
 method to the <code>Basket</code> aggregate that allows us to add a <code>Product</code>.</p>
-<p>We start simple in this chapter and leave a more complex implementation to the next chapter "Aggregate Dependencies".
+<p>We start simple in this chapter and leave a more complex implementation to the next chapter, "Aggregate Dependencies".
 First we need a new value object to reference a <code>Product</code>. Products are not part of our domain but are manged by an external ERP system.</p>
 <p><em>File: ./Basket/src/Model/ERP/ProductId.php</em></p>
 <pre><code class="language-php">&lt;?php
@@ -952,7 +951,7 @@ final class Basket extends AggregateRoot
         if(array_key_exists($productId-&gt;toString(), $this-&gt;products)) {
             throw ProductAddedTwice::toBasket($this-&gt;basketId, $productId);
         }
-                
+
         //@TODO: Check stock
         $this-&gt;recordThat(ProductAddedToBasket::occur($this-&gt;basketId-&gt;toString(), [
             'product_id' =&gt; $productId-&gt;toString()]
@@ -979,11 +978,11 @@ final class Basket extends AggregateRoot
     }
 }
 </code></pre>
-<p>We have a new <code>$products</code> property which is a list of <code>ProductId</code>s whereby the string representation of the <code>ProductId</code>
+<p>We have a new <code>$products</code> property which is a list of <code>ProductId</code>s, where the string representation of the <code>ProductId</code>
 is also used as index. This way we can easily check if a product is added twice.</p>
-<p>The new <code>addProduct()</code> method takes a <code>ProductId</code> as argument and records a new domain event <code>ProductAddedToBasket</code>
+<p>The new <code>addProduct()</code> method takes a <code>ProductId</code> as an argument and records a new domain event <code>ProductAddedToBasket</code>,
 which then gets applied using a new <code>case</code> in the <code>apply</code> method.</p>
-<p>In case of a product being added twice the method throws a <code>ProductAddedTwice</code> exception. Here is the implementation of
+<p>If a product is added twice, the method throws a <code>ProductAddedTwice</code> exception. Here is the implementation of
 that exception.</p>
 <p><em>File: ./Basket/src/Model/Exception/ProductAddedTwice.php</em></p>
 <pre><code class="language-php">&lt;?php
@@ -1169,15 +1168,15 @@ Time: 19 ms, Memory: 4.00MB
 
 OK (3 tests, 9 assertions)
 </code></pre>
-<p>We covered two new possibilities. First, we learned how to reconstitute an aggregate from history. We just added a
+<p>We covered two new possibilities. First, we learned how to reconstitute an aggregate from history. We also added a
 few basket specific test helpers to get better type hinting support and keep creation of events in a central place
 for easier refactoring.</p>
 <p>Second, we learned how to test exceptions. Using exceptions to communicate errors is not always the best choice.
 Another possibility is to use domain events for failure scenarios, too. Later in the tutorial we will see this in action
 and discuss the pros and cons of such an approach.</p>
-<p>Anyway, testing failure cases where the aggregate records a failed event is not different from testing normal event recording.
-Reconstitute the aggregate to move it to a certain point in the business process, provoke the recording of a failure event and
-test if the event was correctly recorded. It's easy as that.</p>
+<p>Either way, testing failure cases where the aggregate records a failed event is not different from testing normal event recording.
+Reconstitute the aggregate to move it to a certain point in the business process, provoke the recording of a failure event, and
+test if the event was correctly recorded. It's as easy as that.</p>
 <h2 id="1-4-3">Links</h2>
 <ul>
 <li>

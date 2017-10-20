@@ -704,36 +704,35 @@
         </div>
                 <div class="col-md-9">
 <div id="section-main"><h1 id="1-3">Event Sourcing Basics</h1>
-<p>Event Sourcing focuses on business processes. The reason is simple. Every write operation in a domain model causes
-a state change. When using Event Sourcing those state changes are described by domain events. For example if an order gets payed
-this is a state change (company gets $$$) and we can describe it with an event using past tense: <strong>OrderPayed</strong>.
-We simply do that for all state changes. What we get is a series of domain events¹.</p>
+<p>Event Sourcing focuses on business processes. Every write operation in a domain model causes
+a state change, described by a domain event. For example, an order getting paid
+is a state change (company gets $$$), and we can describe it with an event using past tense: <strong>OrderPaid</strong>.
+We do that for all state changes, and what we get is a series of domain events¹.</p>
 <p><img src="/tutorial/img/order_stream.png" alt="Order Stream"></p>
-<p><strong>Events happen one after another. They tell us a story about a business process handled by the application.</strong></p>
+<p><strong>Events happen sequentially. They tell us a story about a business process handled by the application.</strong></p>
 <h2 id="1-3-1">Thinking in Events</h2>
-<p>The previous page "Why Event Sourcing" made a point about database driven designs and how Event Sourcing differs from that.
-In Event Sourcing we start with thinking in events.</p>
-<p>Every coding tutorial needs a playground. Ours is an eCommerce domain and our first job is to implement a shopping basket.
+<p>The previous page, "Why Event Sourcing", made a point about database driven designs and how Event Sourcing differs from that.
+In Event Sourcing, we start with thinking in events.</p>
+<p>Every coding tutorial needs a playground. Ours is an eCommerce domain, and our first job is to implement a shopping basket.
 Business tells us that customers can browse an online shop frontend and add available products to their basket.
-The customers don't need to be signed in so their basket is assigned to a shopping session until checkout.
+The customers don't need to be signed in, so their basket is assigned to a shopping session until checkout.
 So far, so good. But the business wants us to implement realtime stock updates.
-While browsing the online shop customers should see constantly updated information about how many other customers
-have the same products in their basket: "<em>5 other customers want to buy the same product at the minute</em>".
-If one customer performs a checkout stock of the product should be reduced immediately along with a notification:
-"<em>Product {name} was bought by customer from {localization} {time span} ago</em>".</p>
+While browsing the online shop, customers should see constantly updated information about how many other customers
+have the same products in their basket: "<em>5 other customers want to buy the same product, at the moment</em>".
+If one customer performs a checkout, stock of the product should be reduced immediately, along with a notification:
+"<em>Product {name} was bought by a customer from {localization} {time span} ago</em>".</p>
 <p>Here is a simplified result of the event storming² session:</p>
 <p><img src="/tutorial/img/shopping_session_event_storming.png" alt="Shopping Session Event Storming"></p>
-<p>As you can see we have a variety of different events. We not only have events that are caused by the customer while
-interacting with their shopping basket but also events caused by changes in foreign shopping sessions. We even have
+<p>As you can see, we have a variety of different events. Not only do we have events that are caused by the customer while
+interacting with their shopping basket but also events caused by changes in other customers' shopping sessions. We even have
 two "error events" defined: <em>QuantityStockConflictDetected, ShoppingSessionTimedOut</em>.</p>
 <h2 id="1-3-2">Defining Events</h2>
-<p>In the tutorial introduction we already took a look at prooph messages and created our first command. Events are created in a
-similar fashion. In fact they are just another type of message. Hence, each prooph event is an implementation of <code>Prooph\Common\Messaging\Message</code>.</p>
-<p>You still have the <code>prooph_tutorial</code> project at hand with <code>prooph/common</code> installed via composer? If not, please go back to
+<p>In the tutorial introduction we looked at prooph messages and created our first command. Events are just another type of message; hence, each prooph event is an implementation of <code>Prooph\Common\Messaging\Message</code>.</p>
+<p>If you do not have the <code>prooph_tutorial</code> project at hand with <code>prooph/common</code> installed, please go back to
 the <a href="introduction.html">introduction</a> and follow the steps there before continuing with the Event Sourcing tutorial.</p>
 <p>We need a project structure for our shopping basket implementation.</p>
 <pre><code>|_ Basket
-| |_ scripts           
+| |_ scripts
 | |_ src
 | | |_ Infrastructure
 | | | |_ Prooph
@@ -777,8 +776,8 @@ the <a href="introduction.html">introduction</a> and follow the steps there befo
     }
 }
 </code></pre>
-<p>We just configured composer's autoloader to use the namespace <code>App\Basket</code>  for our <code>Basket</code> context and the appropriate
-test namespace <code>Àpp\BasketTest</code>.
+<p>We just configured composer's autoloader to use the namespace <code>App\Basket</code> for our <code>Basket</code> context and the appropriate
+test namespace <code>App\BasketTest</code>.
 We've also added the package <code>prooph/event-sourcing</code> to the list of dependencies and told composer to install <code>phpunit/phpunit</code>
 when we're in dev mode.</p>
 <p>You can guess that <code>prooph/event-sourcing</code> provides the basic implementation needed to develop an event sourced domain model.</p>
@@ -810,8 +809,8 @@ final class ShoppingSessionStarted extends AggregateChanged
 }
 
 </code></pre>
-<p>What we do here is extending the base event class <code>AggregateChanged</code> from the <code>prooph/event-sourcing</code> package.
-More about aggregates in a minute. First let's have a look at what the base event class has to offer:</p>
+<p>Here we extend the base event class <code>AggregateChanged</code> from the <code>prooph/event-sourcing</code> package.
+We will discuss aggregates more in a minute, but, first, let's have a look at what the base event class has to offer:</p>
 <pre><code class="language-php">&lt;?php
 
 declare(strict_types=1);
@@ -836,21 +835,21 @@ class AggregateChanged extends DomainEvent
 }
 </code></pre>
 <p><code>AggregateChanged</code> extends <code>Prooph\Common\Messaging\DomainEvent</code>. That's the link back to <code>prooph/common</code> and turns
-all events into prooph messages. Keep that in mind as this is an important information needed later when we want to
+all events into prooph messages. Keep that in mind, as this is important later when we want to
 send events around.</p>
 <p>We also see a static factory method called <code>occur</code> that takes an <code>$aggregateId</code> and <code>$payload</code> as arguments.
 The <code>$aggregateId</code> is a reference to the corresponding aggregate. <strong>Every domain event belongs to exactly one aggregate</strong>.</p>
 <h2 id="1-3-3">Event Sourced Aggregates</h2>
-<p>Event Sourced Aggregates are Domain-Driven Aggregates - units of consistency.
+<p>Event Sourced Aggregates are Domain-Driven Aggregates, representing a unit of consistency.
 They protect invariants. This basically means that an aggregate makes sure that it can transition to a new state.
-Different business rules can permit or prevent those state transitions. The aggregate has to enforce the business rules.</p>
-<p>In our case we need to consider following business rules:</p>
+Different business rules can permit or prevent state transitions, and the aggregate has to enforce these business rules.</p>
+<p>In our case we need to consider the following business rules:</p>
 <ul>
 <li>
-<em>A shopping session is started with an empty basket.</em>
+<em>A shopping session starts with an empty basket.</em>
 </li>
 <li>
-<em>Each shopping session gets its own basket assigned.</em>
+<em>Each shopping session is assigned its own basket.</em>
 </li>
 <li>
 <em>A product can only be added to a basket if at least one product is available in stock.</em>
@@ -859,7 +858,7 @@ Different business rules can permit or prevent those state transitions. The aggr
 <em>Product quantity in a basket must not be higher than available stock.</em>
 </li>
 <li>
-<em>If stock is reduced by a checkout, product quantity in currently active baskets need to be checked and conflicts resolved.</em>
+<em>If stock is reduced by a checkout, product quantity in currently active baskets needs to be checked and conflicts resolved.</em>
 </li>
 <li>
 <em>If product quantity in a basket is reduced to zero or less the product is removed from the basket.</em>
@@ -869,17 +868,16 @@ Different business rules can permit or prevent those state transitions. The aggr
 </li>
 </ul>
 <p>Looking at the rules we can identify a repeating pattern. Every rule includes a state check against a basket and/or describes
-a state transition of a basket. With our current understanding of the domain we're good to go with a <code>Basket</code> aggregate that
+a state transition of a basket. With our current understanding of the domain, we're good to go with a <code>Basket</code> aggregate that
 enforces the business rules described above.</p>
-<p>Even if we name our aggregate only <code>Basket</code> you can think of it like it would be named <code>BasketProcess</code>.
-We don't do it that way because it does not reflect the Ubiquitous Language³ which we draw off from the language used by the business.
+<p>Even if we name our aggregate <code>Basket</code>, you can think of it as if it were named <code>BasketProcess</code>.
+We don't do it that way because it does not reflect the Ubiquitous Language³ which we draw from the language used by the business.
 However, when implementing Event Sourcing you can always keep that <code>Process</code> suffix in mind.</p>
 <p>Recap: Every state transition is described by an event. Events happen one after another. They tell us a story about
-a business <strong>process</strong>. Indeed, an aggregate is a process consisting of multiple steps happening in a sequence.
-Whereby, each next step is validated by the aggregate upfront using current state:</p>
+a business <strong>process</strong>. An aggregate is a process consisting of multiple steps happening in a sequence; whereby, each next step is validated by the aggregate upfront using current state:</p>
 <p><em>A checkout can only be made if no unresolved quantity-stock-conflicts exist for the basket.</em></p>
 <p>Effective Aggregate Design¹¹ is possibly the hardest part of a well crafted domain model. And it evolves over time so
-be prepared to constantly refactor previous design decisions. Thinking of aggregates as processes and model them in an event
+be prepared to constantly refactor previous design decisions. Thinking of aggregates as processes and modeling them in an event
 sourced fashion can help a lot, but it remains a task that needs practice. So don't worry if your first attempts end up
 being unpractical. You will get better. <strong>Thinking in events and processes is the key.</strong></p>
 <p>Let's add the <code>Basket</code> aggregate now.</p>
@@ -910,13 +908,12 @@ final class Basket extends AggregateRoot
 }
 </code></pre>
 <p>Our <code>Basket</code> class extends <code>Prooph\EventSourcing\AggregateRoot</code>. This is the base class for all event sourced aggregates.
-Later we'll also look at an alternative approach using traits instead of extending a prooph class but the
+Later we'll also look at an alternative approach using traits instead of extending a prooph class, but the
 version shown here is easier to understand and helps us with the first steps. <code>AggregateRoot</code> is an abstract class and asks us to implement
-two methods <code>aggregateId()</code> which should provide the string representation of the globally unique identifier of the aggregate
+two methods <code>aggregateId()</code>, which should provide the string representation of the globally unique identifier of the aggregate,
 and an <code>apply()</code> method.</p>
 <p>The <code>apply()</code> method is best explained with an example so let us dive into the implementation. Each aggregate has a
-lifecycle. To start such a lifecycle we need to create the aggregate. But prooph's <code>AggregateRoot</code> does not allow to use
-the class constructor as public method. Instead we're asked to use a so called <strong>named constructor</strong> aka static factory method.</p>
+lifecycle. To start such a lifecycle we need to create the aggregate. But prooph's <code>AggregateRoot</code> does not allow creating the class constructor as a public method. Instead, we're asked to use a so-called <strong>named constructor</strong>, aka static factory method.</p>
 <p><em>File: ./Basket/src/Model/Basket.php</em></p>
 <pre><code class="language-php">&lt;?php
 
@@ -933,12 +930,12 @@ use Prooph\EventSourcing\AggregateRoot;
 final class Basket extends AggregateRoot
 {
     public static function startShoppingSession(
-        ShoppingSession $shoppingSession, 
+        ShoppingSession $shoppingSession,
         BasketId $basketId)
     {
         //Start new aggregate lifecycle by creating an "empty" instance
         $self = new self();
-        
+
         //Record the very first domain event of the new aggregate
         //Note: we don't pass the value objects directly to the event but use their
         //primitive counterparts. This makes it much easier to work with the events later
@@ -946,7 +943,7 @@ final class Basket extends AggregateRoot
         $self-&gt;recordThat(ShoppingSessionStarted::occur($basketId-&gt;toString(), [
             'shopping_session' =&gt; $shoppingSession-&gt;toString()
         ]));
-        
+
         //Return the new aggregate
         return $self;
     }
@@ -966,14 +963,14 @@ final class Basket extends AggregateRoot
 }
 
 </code></pre>
-<p>A meaningful named constructor using the Ubiquitous Language is a great way to let the code document itself.
+<p>A meaningfully named constructor using the Ubiquitous Language is a great way to let the code document itself.
 The <code>Basket</code> aggregate requires a <code>ShoppingSession</code> and a <code>BasketId</code> to start the shopping session.
 Both are value objects that we're going to add next.</p>
 <p><em>Note: BasketId becomes the identifier of the aggregate but it is created outside of the aggregate. That's a common pattern in
 a CQRS system. For example the frontend can create a BasketId using a JavaScript UUID library and send the BasketId to
 the backend. Remember from the introduction chapter: Handling a command has no response other than success or failure. In case
-of success the frontend can use the BasketId to fetch state of the Basket from a read model. Later in the tutorial we'll
-see that in action. For now just keep in mind that aggregate ids are created by the client or application layer
+of success, the frontend can use the BasketId to fetch state of the Basket from a read model. Later in the tutorial we'll
+see that in action. For now, just keep in mind that aggregate ids are created by the client or application layer
 if a CQRS architecture is used.</em></p>
 <p><em>File: ./Basket/src/Model/Basket/ShoppingSession.php</em></p>
 <pre><code class="language-php">&lt;?php
@@ -1070,11 +1067,11 @@ final class BasketId
 </code></pre>
 <p>Recap: We used a named constructor to create the <code>Basket</code> aggregate. The named constructor defines the requirements needed
 to start a shopping session, namely the <code>ShoppingSession</code> and <code>BasketId</code>. Instead of setting those value objects as properties
-in the <code>Basket</code> aggregate we <strong>record</strong> the first domain event <code>ShoppingSessionStarted</code> of the aggregate.</p>
-<p>Now the <code>apply()</code> method comes into play. Our <code>Basket</code> aggregate will have many more methods later to deal with all things
-happening during a shopping session. And in those methods we will often need the current <strong>state</strong> of the aggregate to
+in the <code>Basket</code> aggregate we <strong>record</strong> the first domain event, <code>ShoppingSessionStarted</code>, of the aggregate.</p>
+<p>Now the <code>apply()</code> method comes into play. Our <code>Basket</code> aggregate will have many more methods later to deal with all the things
+happening during a shopping session, and in those methods we will often need the current <strong>state</strong> of the aggregate to
 <strong>protect invariants</strong>. To get access to the state we need to <code>apply()</code> recorded domain events in the exact same order as
-they were recorded. Prooph's <code>ÀggregateRoot</code> takes care of the latter but it does not know <strong>how</strong> a domain event should
+they were recorded. Prooph's <code>AggregateRoot</code> takes care of the latter but it does not know <strong>how</strong> a domain event should
 be applied. Hence, we need to take over that task.</p>
 <p><em>File: ./Basket/src/Model/Basket.php</em></p>
 <pre><code class="language-php">&lt;?php
@@ -1121,13 +1118,13 @@ final class Basket extends AggregateRoot
     protected function apply(AggregateChanged $event): void
     {
         //A simple switch by event name is the fastest way,
-        //but you're free to split things up here and have for example methods like
+        //but you're free to split things up here and have, for example, methods like
         //private function whenShoppingSessionStarted()
-        //To delegate work to them and keep the apply method lean 
+        //To delegate work to them and keep the apply method lean
         switch ($event-&gt;messageName()) {
             case ShoppingSessionStarted::class:
                 /** @var $event ShoppingSessionStarted */
-                
+
                 $this-&gt;basketId = $event-&gt;basketId();
                 $this-&gt;shoppingSession = $event-&gt;shoppingSession();
                 break;
@@ -1136,7 +1133,7 @@ final class Basket extends AggregateRoot
 }
 
 </code></pre>
-<p>Now that we have access to the current state we can finally implement the <code>aggregateId()</code> method to fulfill the contract
+<p>Now that we have access to the current state, we can finally implement the <code>aggregateId()</code> method to fulfill the contract
 defined by prooph's <code>AggregateRoot</code> class.</p>
 <p><em>File: ./Basket/src/Model/Basket.php</em></p>
 <pre><code class="language-php">&lt;?php
@@ -1180,13 +1177,13 @@ final class Basket extends AggregateRoot
 }
 
 </code></pre>
-<p>Ok, that are the basics of Event Sourcing. Many new things to learn, right? But don't worry. You'll get used to it while
-we look at some more aspects of Event Sourcing. In the next part we will look at testing event sourced aggregates
+<p>Ok, those are the basics of Event Sourcing. Many new things to learn, right? But don't worry. You'll get used to it while
+we look at some more aspects of Event Sourcing. In the next part we will look at testing event sourced aggregates,
 which is super easy when you have a clean and decoupled domain model.</p>
-<p><em>Advise: Revisit the basics part whenever you feel lost. Event Sourcing is really simple once you understand it.
-In the section below you can find links to related blog posts. But before you follow them take a break and let
+<p><em>Advice: Revisit the basics part whenever you feel lost. Event Sourcing is really simple once you understand it.
+In the section below you will find links to related blog posts. Before you follow them, take a break and let
 the basics sink in. You can read the posts later when you feel more comfortable with Event Sourcing. Don't overload your
-head with too much information at a time.</em></p>
+head with too much information at once.</em></p>
 <h2 id="1-3-4">Related reads</h2>
 <ul>
 <li>
