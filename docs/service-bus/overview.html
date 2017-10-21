@@ -542,10 +542,6 @@
     
     <ul class="dropdown-menu">
                         <li>
-    <a href="/service-bus/intro.html">PSB - ProophServiceBus</a>
-
-    </li>
-                        <li>
     <a href="/service-bus/overview.html">PSB Overview</a>
 
     </li>
@@ -685,47 +681,102 @@
             <nav class="nav-left hidden-xs hidden-sm" id="sideNav">
     <ul class="nav nav-stacked" data-spy="affix" data-offset-top="59" role="tablist">
                                 <li>
-                <a href="#2-2" title="PSB&#x20;Overview">PSB Overview</a>
+                <a href="#2-1" title="PSB&#x20;Overview">PSB Overview</a>
             </li>
                                 <li>
-                <a href="#2-2-1" title="CommandBus">CommandBus</a>
+                <a href="#2-1-1" title="Installation">Installation</a>
             </li>
                                 <li>
-                <a href="#2-2-2" title="EventBus">EventBus</a>
+                <a href="#2-1-2" title="Quick&#x20;Start">Quick Start</a>
             </li>
                                 <li>
-                <a href="#2-2-3" title="QueryBus">QueryBus</a>
+                <a href="#2-1-3" title="Live&#x20;Coding&#x20;Introduction">Live Coding Introduction</a>
             </li>
                                 <li>
-                <a href="#2-2-4" title="Message&#x20;Objects">Message Objects</a>
+                <a href="#2-1-4" title="Messaging&#x20;API">Messaging API</a>
             </li>
                                 <li>
-                <a href="#2-2" title="Synchronous&#x20;Versus&#x20;Asynchronous&#x20;Processing">Synchronous Versus Async...</a>
+                <a href="#2-1-5" title="CommandBus">CommandBus</a>
+            </li>
+                                <li>
+                <a href="#2-1-6" title="EventBus">EventBus</a>
+            </li>
+                                <li>
+                <a href="#2-1-7" title="QueryBus">QueryBus</a>
+            </li>
+                                <li>
+                <a href="#2-1-8" title="Message&#x20;Objects">Message Objects</a>
+            </li>
+                                <li>
+                <a href="#2-1" title="Synchronous&#x20;Versus&#x20;Asynchronous&#x20;Processing">Synchronous Versus Async...</a>
             </li>
             </ul>
 </nav>
         </div>
                 <div class="col-md-9">
-<div id="section-main"><h1 id="2-2">PSB Overview</h1>
+<div id="section-main"><h1 id="2-1">PSB Overview</h1>
 <p>prooph/service-bus acts as a messaging facade. It operates on the application layer and shields your domain model.
 In addition we also provide so-called "message producers" which connect prooph/service-bus
 with messaging infrastructure on the system and network level.</p>
-<p>Three different message bus implementations are available.</p>
-<h2 id="2-2-1">CommandBus</h2>
+<h2 id="2-1-1">Installation</h2>
+<pre><code class="language-bash">composer require prooph/service-bus
+</code></pre>
+<h2 id="2-1-2">Quick Start</h2>
+<pre><code class="language-php">&lt;?php
+
+use Prooph\ServiceBus\CommandBus;
+use Prooph\ServiceBus\Example\Command\EchoText;
+use Prooph\ServiceBus\Plugin\Router\CommandRouter;
+
+$commandBus = new CommandBus();
+
+$router = new CommandRouter();
+
+//Register a callback as CommandHandler for the EchoText command
+$router-&gt;route('Prooph\ServiceBus\Example\Command\EchoText')
+    -&gt;to(function (EchoText $aCommand): void {
+        echo $aCommand-&gt;getText();
+    });
+
+//Expand command bus with the router plugin
+$router-&gt;attachToMessageBus($commandBus);
+
+//We create a new Command
+$echoText = new EchoText('It works');
+
+//... and dispatch it
+$commandBus-&gt;dispatch($echoText);
+
+//Output should be: It works
+</code></pre>
+<h2 id="2-1-3">Live Coding Introduction</h2>
+<p><a href="https://www.youtube.com/watch?v=6EcQjVSj3m4"><img src="https://img.youtube.com/vi/6EcQjVSj3m4/0.jpg" alt="Prooph Service Bus v6"></a></p>
+<h2 id="2-1-4">Messaging API</h2>
+<p><code>prooph/service-bus</code> allows you to define the API of your model with the help of messages.</p>
+<ol>
+<li>
+<strong>Command</strong> messages describe actions your model can handle.</li>
+<li>
+<strong>Event</strong> messages describe things that happened while your model handled a command.</li>
+<li>
+<strong>Query</strong> messages describe available information that can be fetched from your (read) model.</li>
+</ol>
+<p>Three different message bus implementations are available, too.</p>
+<h2 id="2-1-5">CommandBus</h2>
 <p>The CommandBus is designed to dispatch a message to exactly one handler or message producer. It does not return a result.
 Sending a command means <em>fire and forget</em> and enforces the <em>Tell-Don't-Ask</em> principle.</p>
-<h2 id="2-2-2">EventBus</h2>
+<h2 id="2-1-6">EventBus</h2>
 <p>The EventBus is able to dispatch a message to <code>n</code> listeners. Each listener can be a message handler or message producer.
 Like commands the EventBus doesn't return anything.</p>
-<h2 id="2-2-3">QueryBus</h2>
+<h2 id="2-1-7">QueryBus</h2>
 <p>The QueryBus also dispatches a message to exactly one finder (special query message handler)
 but it returns a <code>React\Promise\Promise</code>. The QueryBus hands the query message to a finder along with a <code>React\Promise\Deferred</code> which needs to be resolved by the finder.
 We use promises to allow finders to handle queries asynchronous, for example using <code>curl_multi_exec</code>.</p>
-<h2 id="2-2-4">Message Objects</h2>
+<h2 id="2-1-8">Message Objects</h2>
 <p>You are free to use your own message objects (or even primitive types if you want). All message buses are smart enough to handle them.
 If you need custom logic to handle your messages check out the list of available message bus plugins or write your own bus plugin.
 It is pretty straight forward.</p>
-<h1 id="2-2">Synchronous Versus Asynchronous Processing</h1>
+<h1 id="2-1">Synchronous Versus Asynchronous Processing</h1>
 <p>PSB provides both possibilities behind a unified interface.
 Remember the statement "Messaging means fire and forget".
 The callee never knows if the message is processed synchronously or asynchronously.
@@ -740,7 +791,7 @@ message processing. If the message is routed to message producer it is normally 
         <div class="container">
             <div class="row">
                 <div class="prev col-xs-6">
-                                            <a href="/service-bus/intro.html">Previous</a>                                    </div>
+                                            <a href="/service-bus/">Previous</a>                                    </div>
                 <div class="next col-xs-6">
                                             <a href="/service-bus/message_bus.html">Next</a>                                    </div>
             </div>

@@ -542,10 +542,6 @@
     
     <ul class="dropdown-menu">
                         <li>
-    <a href="/service-bus/intro.html">PSB - ProophServiceBus</a>
-
-    </li>
-                        <li>
     <a href="/service-bus/overview.html">PSB Overview</a>
 
     </li>
@@ -685,29 +681,29 @@
             <nav class="nav-left hidden-xs hidden-sm" id="sideNav">
     <ul class="nav nav-stacked" data-spy="affix" data-offset-top="59" role="tablist">
                                 <li>
-                <a href="#2-5" title="Async&#x20;Message&#x20;Producer">Async Message Producer</a>
+                <a href="#2-4" title="Async&#x20;Message&#x20;Producer">Async Message Producer</a>
             </li>
                                 <li>
-                <a href="#2-5-1" title="Available&#x20;MessageProducer">Available MessageProduce...</a>
+                <a href="#2-4-1" title="Available&#x20;MessageProducer">Available MessageProduce...</a>
             </li>
                                 <li>
-                <a href="#2-5-2" title="Usage">Usage</a>
+                <a href="#2-4-2" title="Usage">Usage</a>
             </li>
                                 <li>
-                <a href="#2-5-3" title="Async&#x20;Querying">Async Querying</a>
+                <a href="#2-4-3" title="Async&#x20;Querying">Async Querying</a>
             </li>
             </ul>
 </nav>
         </div>
                 <div class="col-md-9">
-<div id="section-main"><h1 id="2-5">Async Message Producer</h1>
+<div id="section-main"><h1 id="2-4">Async Message Producer</h1>
 <p>Messaging becomes really interesting if you process your messages asynchronously. PSB can
 hide such an asynchronous workflow behind a unified interface. You can start with synchronous message
 dispatching by routing your messages directly to message handlers and if you later want to improve response
 times you can switch to async processing on a per message basis by routing the appropriate messages to a
 message producer which hands them over to a messaging system like RabbitMQ, ZeroMQ, Gearman, Beanstalkd or any
 other queue.</p>
-<h2 id="2-5-1">Available MessageProducer</h2>
+<h2 id="2-4-1">Available MessageProducer</h2>
 <ul>
 <li>
 <a href="https://github.com/prooph/psb-bernard-producer">BernardProducer</a>: Queue multi-backend providing different
@@ -725,7 +721,7 @@ and simple to set up ZeroMQ</li>
 <li>
 <a href="https://github.com/prooph/psb-enqueue-producer">EnqueueProducer</a>: Async handling using Enqueue MQ library.</li>
 </ul>
-<h2 id="2-5-2">Usage</h2>
+<h2 id="2-4-2">Usage</h2>
 <p>If you want to set up a bus that handles all messages asynchronously you can do so by attaching a
 <code>Prooph\ServiceBus\Plugin\MessageProducerPlugin</code> initialized with your message producer of choice
 to a message bus.</p>
@@ -757,7 +753,7 @@ $commandBus-&gt;dispatch($echoText);
 <p>You can also route individual messages to message producers by using a message router plugin.</p>
 <p><em>Note: <code>Prooph\ServiceBus\Plugin\Router\RegexRouter</code> is a good choice
 if you want to handle all messages of a specific namespace async.</em></p>
-<h2 id="2-5-3">Async Querying</h2>
+<h2 id="2-4-3">Async Querying</h2>
 <p>An async message producer for the QueryBus needs to provide a response by resolving the input
 <code>React\Promise\Deferred</code>. When using a messaging system like ZeroMQ for example you can make use of
 request/response mode or RPC mode. HTTP APIs provide responses naturally. So these are both good
