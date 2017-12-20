@@ -933,6 +933,7 @@ final class ProductAddedToBasket extends AggregateChanged
 //...
 use App\Basket\Model\ERP\ProductId;
 use App\Basket\Model\Exception\ProductAddedTwice;
+use App\Basket\Model\Event\ProductAddedToBasket;
 
 final class Basket extends AggregateRoot
 {
