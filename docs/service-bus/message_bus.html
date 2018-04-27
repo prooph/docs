@@ -845,7 +845,7 @@ to add your listener with a higher priority than that.</p>
 <pre><code class="language-php">$commandBus-&gt;attach(
     CommandBus::EVENT_FINALIZE,
     function (ActionEvent $actionEvent) {
-        if ($ex = $actionEvent-&gt;getParam(CommandBus::EVENT_PARAM_EXCEPTION) {
+        if ($ex = $actionEvent-&gt;getParam(CommandBus::EVENT_PARAM_EXCEPTION)) {
             // do something
         }
     }

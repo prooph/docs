@@ -717,7 +717,7 @@ MySQL and MariaDB as well as PostgreSQL.</p>
 <h2 id="3-2-1-2-1">Differences of MariaDb-/MySql- &amp; PostgresEventStore</h2>
 <p>The PostgresEventStore has a better performance (at least with default database configuration) and implements the
 <code>TransactionalEventStore</code> interface. If you need maximum performance or transaction support, we recommend to use the
-PostgresEventStore over the MariaDb-/MySqlEventStore.</p>
+PostgresEventStore instead of the MariaDb-/MySqlEventStore.</p>
 <h2 id="3-2-1-2-2">Event streams / projections table</h2>
 <p>All known event streams are stored in an event stream table, so with a simple table lookup, you can find out what streams
 are available in your store.</p>
@@ -725,7 +725,7 @@ are available in your store.</p>
 available, and what their current state / stream positition / status is.</p>
 <h2 id="3-2-1-2-3">Load batch size</h2>
 <p>When reading from an event streams with multiple aggregates (especially when using projections), you could end of with
-millions of events loaded in memory. Therefor the pdo-event-store will load events only in batches of 1000 by default.
+millions of events loaded in memory. Therefor the pdo-event-store will load events only in batches of 10000 by default.
 You can change to value to something higher to achieve even more performance with higher memory usage, or decrease it
 to reduce memory usage even more, with the drawback of having a not as good performance.</p>
 <h2 id="3-2-1-2-4">PDO Connection for event-store and projection manager</h2>
@@ -756,9 +756,12 @@ You can query the <code>event_streams</code> table to get real stream name to st
 <p>This stream strategy should be used together with event-sourcing, if you use one stream per aggregate. For example, you have 2 instances of two
 different aggregates named <code>user-123</code>, <code>user-234</code>, <code>todo-345</code> and <code>todo-456</code>, you would have 4 different event streams,
 one for each aggregate.</p>
-<p>This stream strategy is the most performant of all, but it will create a lot of database tables, which is something not
+<p>This stream strategy is the most performant of all (with downsides, see notes), but it will create a lot of database tables, which is something not
 everyone likes (especially DB admins).</p>
 <p>All needed database tables will be created automatically for you.</p>
+<p>Note: For event-store projections the aggregate stream strategy is not that performant anymore, consider using <a href="https://github.com/prooph/standard-projections/blob/master/src/CategoryStreamProjectionRunner.php">CategoryStreamProjectionRunner</a> from the [standard-projections]((https://github.com/prooph/standard-projections) repository.
+But even than, the projections would be slow, because the projector needs to check all the streams one-by-one for any new events. Because of this speed of finding and projecting any new events depends on the number of streams which means it would rapidly decrease as you add more data to your event store.</p>
+<p>You could however drastically improve the projections, if you would add a category stream projection as event-store-plugin. (This doesn't exist, yet)</p>
 <h3 id="3-2-1-2-5-2">SingleStreamStrategy</h3>
 <p>This stream strategy should be used together with event-sourcing, if you want to store all events of an aggregate type into a single stream, for example
 <code>user-123</code> and <code>user-234</code> should both be stored into a stream called <code>user</code>.</p>

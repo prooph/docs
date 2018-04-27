@@ -720,9 +720,10 @@ MySQL and MariaDB as well as PostgreSQL.</p>
 <li>PHP &gt;= 7.1</li>
 <li>PDO_MySQL Extension or PDO_PGSQL Extension</li>
 </ul>
-<p>For MariaDB you need server vesion &gt;= 10.2.6.
-For MySQL you need server version &gt;= 5.7.9.
-For Postgres you need server version &gt;= 9.4.</p>
+<p>For MariaDB you need server version &gt;= 10.2.11.</p>
+<p>For MySQL you need server version &gt;= 5.7.9.</p>
+<p>For Postgres you need server version &gt;= 9.4.</p>
+<p>Attention: Since v1.6.0 MariaDB Server has to be at least 10.2.11 due to a bugfix in MariaDB, see https://jira.mariadb.org/browse/MDEV-14402.</p>
 <h2 id="3-2-1-1-4">Setup</h2>
 <p>For MariaDB run the script in <code>scripts/mariadb/01_event_streams_table.sql</code> on your server.</p>
 <p>For MySQL run the script in <code>scripts/mysql/01_event_streams_table.sql</code> on your server.</p>

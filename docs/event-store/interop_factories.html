@@ -749,6 +749,9 @@ always bootstrap the components by hand. Just look at the factories for inspirat
 ]
 </code></pre>
 <p>$eventStore = $container-&gt;get('inmemoryeventstore');</p>
+<p>By default, <code>InMemoryEventStore</code> which is transactional, is created by factory. If you want to change this behaviour to
+create <code>NonTransactionalInMemoryEventStore</code>, simply override default config of given event store to
+<code>'transactional' =&gt; false</code></p>
 <h4 id="3-7-1-2-1">ReadOnlyEventStoreWrapper</h4>
 <p>If you want to have a read only event store, just add <code>'read_only' =&gt; true</code> to your event store config.</p>
 <h3 id="3-7-1-3">InMemoryProjectionManagerFactory</h3>

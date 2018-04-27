@@ -749,12 +749,12 @@ $projection = $projectionManager-&gt;createReadModelProjection(
 );
 
 $categorySnapshotProjection = new \Prooph\Snapshotter\CategorySnapshotProjection($projection, 'user');
-$categorySnapshotProjection-&gt;run();
+$categorySnapshotProjection();
 
 // or
 
 $streamSnapshotProjection = new \Prooph\Snapshotter\StreamSnapshotProjection($projection, 'user');
-$streamSnapshotProjection-&gt;run();
+$streamSnapshotProjection();
 </code></pre>
 </div>        </div>
     </div>

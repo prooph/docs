@@ -719,7 +719,7 @@ always bootstrap the components by hand. Just look at the factories for inspirat
     'prooph' =&gt; [
         'memcached_snapshot_store' =&gt; [
             'default' =&gt; [
-                'connection_service' =&gt; 'my_memcached_connection', //&lt;-- service name of your memcached connection
+                'connection' =&gt; 'my_memcached_connection', //&lt;-- service name of your memcached connection
                 'serializer' =&gt; 'My\Serializer' //&lt;-- optional, service name of a custom serializer
             ],
         ],

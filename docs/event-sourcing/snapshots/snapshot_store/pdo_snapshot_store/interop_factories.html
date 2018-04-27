@@ -719,7 +719,7 @@ always bootstrap the components by hand. Just look at the factories for inspirat
     'prooph' =&gt; [
         'pdo_snapshot_store' =&gt; [
             'default' =&gt; [
-                'connection_service' =&gt; 'my_pdo_connection', //&lt;-- service name of your pdo connection
+                'connection' =&gt; 'my_pdo_connection', //&lt;-- service name of your pdo connection
                 'default_snapshot_table_name' =&gt; 'snapshots', //&lt;-- table name of your snapshots, defaults to `snapshots`
                 'snapshot_table_map' =&gt; [ //&lt;-- Array with key = aggregate type, value = snapshot table name, defaults to empty array
                     'My\AggregateOne' =&gt; 'one_snapshots',

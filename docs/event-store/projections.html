@@ -709,7 +709,7 @@
         </div>
                 <div class="col-md-9">
 <div id="section-main"><h1 id="3-4">Projections</h1>
-<p>New in v7 are queries and projectons.</p>
+<p>New in v7 are queries and projections.</p>
 <h2 id="3-4-1">Queries</h2>
 <p>Here, we are discussing event store queries, not queries on your read model. An event store query reads one or
 multiple event streams, aggregates some state from it and makes it accessible. A query is a non-persistent function,
@@ -805,23 +805,23 @@ $projector
 </code></pre>
 <p>This would count all registered users.</p>
 <h3 id="3-4-2-1">Options</h3>
-<p>There are three options common to all projectors:</p>
-<p>OPTION_CACHE_SIZE = 'cache_size';</p>
+<p>There are six options common to all projectors:</p>
+<p>OPTION_CACHE_SIZE = 'cache_size'; //Default: 1000</p>
 <p>The cache size is how many stream names are cached in memory, the higher the number the less queries are executed and therefore
 the projection runs faster, but it consumes more memory.</p>
-<p>OPTION_SLEEP = 'sleep';</p>
+<p>OPTION_SLEEP = 'sleep'; //Default: 100000</p>
 <p>The sleep options tells the projection to sleep that many microseconds before querying the event store again when no events
 were found in the last trip. This reduces the number of cpu cycles without the projection doing any real work.</p>
-<p>OPTION_PERSIST_BLOCK_SIZE = 'persist_block_size';</p>
+<p>OPTION_PERSIST_BLOCK_SIZE = 'persist_block_size'; //Default: 1000</p>
 <p>The persist block size tells the projector to persist its changes after a given number of operations. This increases the speed
 of the projection a lot. When you only persist every 1000 events compared to persist on every event, then 999 write operations
 are saved. The higher the number, the fewer write operations are made to your system, making the projections run faster.
 On the other side, in case of an error, you need to redo the last operations again. If you are publishing events to the outside
 world within a projection, you may think of a persist block size of 1 only.</p>
-<p>OPTION_LOCK_TIMEOUT_MS = 'lock_timeout_ms'</p>
-<p>Indicates the time (in microseconds) the projector is locked. During this time no other projector with the same name can
-be started. A running projector will update the lock timeout on every loop.</p>
-<p>OPTION_PCNTL_DISPATCH = 'false'</p>
+<p>OPTION_LOCK_TIMEOUT_MS = 'lock_timeout_ms'; //Default: 1000</p>
+<p>Indicates the time (in milliseconds) the projector is locked. During this time no other projector with the same name can
+be started. A running projector will update the lock timeout on every loop, except you configure an update lock threshold.</p>
+<p>OPTION_PCNTL_DISPATCH = 'trigger_pcntl_dispatch'; //Default: false</p>
 <p>Enable dispatching of process signals to registered <a href="http://php.net/manual/en/function.pcntl-signal.php">signal handlers</a> while
 the projection is running. You must still register your own signal handler and act accordingly.
 For example to gracefully stop the projection you could do</p>
@@ -833,6 +833,25 @@ pcntl_signal(SIGQUIT, function () use ($projection) {
     $projection-&gt;stop();
 });
 $projection-&gt;run();
+</code></pre>
+<p>OPTION_UPDATE_LOCK_THRESHOLD = 'update_lock_threshold'; //Default: 0</p>
+<p>If update lock threshold is set to a value greater than 0 the projection won't update lock timeout until number of milliseconds
+have passed. Let's say your projection has a sleep interval of 100 ms and a lock timeout of 1000 ms.
+By default the projector updates lock timeout after each run so basically every 100 ms the lock timeout is set to: <code>now() + 1000 ms</code>
+This causes a lot of extra work for your database and in case the database is replicated this can cause a lot of network traffic, too.</p>
+<p>This is how the projection works without a threshold set:</p>
+<pre><code>1. Process new events. Update lock timeout -&gt; now() + 1000 ms. Sleep 100 ms
+2. Process new events. Update lock timeout -&gt; now() + 1000 ms. Sleep 100 ms
+3. Process new events. Update lock timeout -&gt; now() + 1000 ms. Sleep 100 ms
+...
+</code></pre>
+<p>And this is the projection flow with an update lock threshold set to <code>700 ms</code>:</p>
+<pre><code>1. Process new events. Sleep 100 ms
+2. Process new events. Sleep 100 ms
+3. Process new events. Sleep 100 ms
+...
+7. Process new events. Update lock timeout -&gt; now() + 1000 ms. Sleep 100 ms
+8. Process new events. Sleep 100 ms
 </code></pre>
 <h2 id="3-4-3">Read Model Projections</h2>
 <p>Projections can also be used to create read models. A read model has to implement <code>Prooph\EventStore\Projection\ReadModel</code>.
