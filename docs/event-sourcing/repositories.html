@@ -866,7 +866,7 @@ in the AggregateType class like this:</p>
 <code>AggregateRepository</code> uses an identity map. So every loaded aggregate is stored there, unless a commit is executed. If
 you have a read only process, you should consider to clear the identity map at some time. This can be done by calling
 <code>clearIdentityMap()</code>.</p>
-<pre><code class="language-php">$thousandsOfAggregateIds = [ // lots of ids here ];
+<pre><code class="language-php">$thousandsOfAggregateIds = [ /* lots of ids here */ ];
 $number = 0;
 
 foreach ($thousandsOfAggregateIds as $aggregateId) {
